@@ -168,7 +168,7 @@ export default function CreatePage() {
       const sigRes = await fetch('/api/upload/sign', { method: 'POST', credentials: 'include' })
       const sigBody = await sigRes.json()
       if (!sigRes.ok || !sigBody.success) throw new Error(sigBody.error ?? 'Failed to get upload token')
-      const { timestamp, signature, apiKey, cloudName, folder } = sigBody.data
+      const { timestamp, signature, apiKey, cloudName, folder, transformation } = sigBody.data
 
       // Step 2: upload directly to Cloudinary — bypasses Vercel body size limit
       const formData = new FormData()
@@ -177,7 +177,7 @@ export default function CreatePage() {
       formData.append('timestamp', String(timestamp))
       formData.append('signature', signature)
       formData.append('folder', folder)
-      formData.append('transformation', 'c_limit,w_1920,h_1920/f_auto,q_auto')
+      formData.append('transformation', transformation)
 
       const uploadRes = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
