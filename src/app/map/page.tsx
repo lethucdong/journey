@@ -147,7 +147,7 @@ export default function MapPage() {
   return (
     <div className="pt-16 h-screen overflow-hidden relative">
       {/* View toggle + user filter badge */}
-      <div className="absolute top-20 left-4 z-[1000] flex items-center gap-2 flex-wrap">
+      <div className="absolute top-20 right-4 z-[1000] flex items-center gap-2 flex-wrap">
         <div className="flex items-center gap-1 p-1 rounded-xl bg-black/70 backdrop-blur-md border border-white/10 shadow-xl">
           {VIEW_OPTIONS.map(({ value, label, icon: Icon }) => (
             <button

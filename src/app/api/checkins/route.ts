@@ -123,7 +123,7 @@ export async function GET(req: NextRequest) {
         ...textFilter,
       }
 
-      const [total, checkIns] = await prisma.$transaction([
+      const [total, checkIns] = await Promise.all([
         prisma.checkIn.count({ where }),
         prisma.checkIn.findMany({
           where,

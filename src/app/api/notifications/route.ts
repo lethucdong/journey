@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     const session = await requireAuth(req)
 
-    const [notifications, unreadCount] = await prisma.$transaction([
+    const [notifications, unreadCount] = await Promise.all([
       prisma.notification.findMany({
         where: { recipientId: session.sub },
         orderBy: { createdAt: 'desc' },

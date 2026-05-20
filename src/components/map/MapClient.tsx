@@ -34,9 +34,9 @@ export default function MapClient({ checkIns, view = 'mine', currentUserId, onDe
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
 
+  // ── Init map once on mount ──────────────────────────────────────────────────
   useEffect(() => {
     if (!mapRef.current) return
-
     let cancelled = false
 
     import('leaflet').then((L) => {
@@ -44,36 +44,53 @@ export default function MapClient({ checkIns, view = 'mine', currentUserId, onDe
 
       const Leaflet = L.default
       const container = mapRef.current as HTMLDivElement & { _leaflet_id?: number }
-
       if (container._leaflet_id) delete container._leaflet_id
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove()
-        mapInstanceRef.current = null
-      }
 
       const map = Leaflet.map(container, {
         center: [20, 15],
         zoom: 2.5,
-        zoomControl: true,
+        zoomControl: false,
         attributionControl: true,
       })
 
+      Leaflet.control.zoom({ position: 'bottomright' }).addTo(map)
+
       Leaflet.tileLayer(
         'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-        {
-          attribution: '© OpenStreetMap © CartoDB',
-          subdomains: 'abcd',
-          maxZoom: 19,
-        }
+        { attribution: '© OpenStreetMap © CartoDB', subdomains: 'abcd', maxZoom: 19 }
       ).addTo(map)
 
-      // Zoom to user's current location (zoom 8 — city level, not too close)
       navigator.geolocation?.getCurrentPosition(
         (pos) => {
           if (!cancelled) map.flyTo([pos.coords.latitude, pos.coords.longitude], 12, { animate: true, duration: 1.5 })
         },
-        () => {} // silently ignore if denied
+        () => {}
       )
+
+      mapInstanceRef.current = map
+      setMapReady(true)
+    })
+
+    return () => {
+      cancelled = true
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+      }
+    }
+  }, [])
+
+  // ── Update markers whenever checkIns changes ─────────────────────────────
+  useEffect(() => {
+    const map = mapInstanceRef.current
+    if (!map) return
+
+    import('leaflet').then((L) => {
+      const Leaflet = L.default
+
+      // Remove old markers
+      markersRef.current.forEach(({ marker }) => marker.remove())
+      markersRef.current = []
 
       function createIcon(mood: string) {
         const m = MOODS[mood as keyof typeof MOODS]
@@ -85,12 +102,7 @@ export default function MapClient({ checkIns, view = 'mine', currentUserId, onDe
             <circle cx="22" cy="22" r="4.5" fill="white" />
           </svg>
         `
-        return Leaflet.divIcon({
-          html: svg,
-          className: '',
-          iconSize: [size, size],
-          iconAnchor: [size / 2, size / 2],
-        })
+        return Leaflet.divIcon({ html: svg, className: '', iconSize: [size, size], iconAnchor: [size / 2, size / 2] })
       }
 
       checkIns.forEach((item) => {
@@ -102,20 +114,8 @@ export default function MapClient({ checkIns, view = 'mine', currentUserId, onDe
         marker.addTo(map)
         markersRef.current.push({ marker, item })
       })
-
-      mapInstanceRef.current = map
-      setMapReady(true)
     })
-
-    return () => {
-      cancelled = true
-      markersRef.current = []
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove()
-        mapInstanceRef.current = null
-      }
-    }
-  }, [checkIns])
+  }, [checkIns, mapReady])
 
   const handleSidebarSelect = (item: ApiCheckIn) => {
     setActiveItem(item)

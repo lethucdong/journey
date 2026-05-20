@@ -37,18 +37,15 @@ export async function POST(req: NextRequest) {
       return apiError('Refresh token expired', 401)
     }
 
-    // Rotate: delete old, create new
+    // Rotate: update token hash in-place (single statement, safe with PgBouncer)
     const newRawRefresh = generateRefreshToken()
-    await prisma.$transaction([
-      prisma.refreshToken.delete({ where: { tokenHash } }),
-      prisma.refreshToken.create({
-        data: {
-          tokenHash: hashRefreshToken(newRawRefresh),
-          userId: stored.userId,
-          expiresAt: refreshTokenExpiresAt(),
-        },
-      }),
-    ])
+    await prisma.refreshToken.update({
+      where: { tokenHash },
+      data: {
+        tokenHash: hashRefreshToken(newRawRefresh),
+        expiresAt: refreshTokenExpiresAt(),
+      },
+    })
 
     const newAccessToken = await signAccessToken({
       sub: stored.user.id,

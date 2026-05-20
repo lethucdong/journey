@@ -434,7 +434,7 @@ export default function EditPage({ params }: { params: Promise<{ id: string }> }
                 </p>
               </div>
               <div className={`w-10 h-5 rounded-full transition-colors relative shrink-0 ${isPublic ? 'bg-orange-500' : 'bg-white/15'}`}>
-                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${isPublic ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${isPublic ? 'translate-x-5' : 'translate-x-0'}`} />
               </div>
             </button>
 
