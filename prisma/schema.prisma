@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum NotifType {
+  comment  // ai đó comment vào check-in của mình
+  reply    // ai đó reply vào comment của mình
+}
+
+enum Mood {
+  terrible
+  normal
+  beautiful
+  amazing
+  mustgo
+}
+
+enum PlaceType {
+  mountain
+  beach
+  camping
+  cafe
+  roadtrip
+  adventure
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  displayName  String
+  avatar       String?
+  bio          String?  @db.Text
+  passwordHash String
+
+  checkIns      CheckIn[]
+  refreshTokens RefreshToken[]
+  comments      Comment[]
+  notifications        Notification[] @relation("notif_recipient")
+  sentNotifications    Notification[] @relation("notif_sender")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([username])
+}
+
+model CheckIn {
+  id          String    @id @default(cuid())
+  title       String
+  description String?   @db.Text
+  story       String?   @db.Text
+  location    String
+  country     String
+  lat         Float
+  lng         Float
+  date        DateTime
+  mood        Mood
+  type        PlaceType
+  images      String[]
+  tags        String[]
+  isPublic         Boolean   @default(false)
+  commentsEnabled  Boolean   @default(true)
+
+  titleEmbedding       Unsupported("vector(768)")?
+  descriptionEmbedding Unsupported("vector(768)")?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  comments      Comment[]
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@index([mood])
+  @@index([isPublic])
+}
+
+model Comment {
+  id        String  @id @default(cuid())
+  content   String  @db.Text
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkInId String
+  checkIn   CheckIn @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Comment?  @relation("replies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("replies")
+  hidden    Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([checkInId])
+  @@index([parentId])
+  @@index([userId])
+}
+
+model Notification {
+  id         String    @id @default(cuid())
+  recipientId String
+  recipient   User      @relation("notif_recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  senderId   String
+  sender     User      @relation("notif_sender", fields: [senderId], references: [id], onDelete: Cascade)
+  type       NotifType
+  checkInId  String?
+  checkIn    CheckIn?  @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  commentId  String?
+  read       Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+
+  @@index([recipientId, read])
+  @@index([recipientId])
+}
+
+// Lưu refresh token để có thể revoke và rotate
+model RefreshToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique  // Lưu SHA-256 hash, không lưu raw token
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
