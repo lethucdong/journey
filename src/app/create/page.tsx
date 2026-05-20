@@ -163,13 +163,30 @@ export default function CreatePage() {
   const uploadFile = useCallback(async (file: File) => {
     const preview = URL.createObjectURL(file)
     setImages((prev) => [...prev, { url: '', preview, uploading: true }])
-    const formData = new FormData()
-    formData.append('file', file)
     try {
-      const res = await fetch('/api/upload', { method: 'POST', body: formData, credentials: 'include' })
-      const body = await res.json()
-      if (!res.ok || !body.success) throw new Error(body.error ?? 'Upload failed')
-      const url: string = body.data?.url ?? body.url
+      // Step 1: get a signed upload params from server (tiny request, no file)
+      const sigRes = await fetch('/api/upload/sign', { method: 'POST', credentials: 'include' })
+      const sigBody = await sigRes.json()
+      if (!sigRes.ok || !sigBody.success) throw new Error(sigBody.error ?? 'Failed to get upload token')
+      const { timestamp, signature, apiKey, cloudName, folder } = sigBody.data
+
+      // Step 2: upload directly to Cloudinary — bypasses Vercel body size limit
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('api_key', apiKey)
+      formData.append('timestamp', String(timestamp))
+      formData.append('signature', signature)
+      formData.append('folder', folder)
+      formData.append('transformation', 'c_limit,w_1920,h_1920/f_auto,q_auto')
+
+      const uploadRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        { method: 'POST', body: formData }
+      )
+      const uploadBody = await uploadRes.json()
+      if (!uploadRes.ok) throw new Error(uploadBody.error?.message ?? 'Upload failed')
+
+      const url: string = uploadBody.secure_url
       setImages((prev) => prev.map((img) => img.preview === preview ? { ...img, url, uploading: false } : img))
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Upload failed'
