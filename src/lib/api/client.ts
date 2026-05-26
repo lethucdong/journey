@@ -7,6 +7,7 @@ export interface ApiUser {
   displayName: string
   avatar: string | null
   bio: string | null
+  phone: string | null
   createdAt: string
   _count?: { checkIns: number }
 }
@@ -96,6 +97,26 @@ export async function apiRefresh() {
 
 export async function apiGetMe() {
   return apiFetch<{ user: ApiUser }>('/api/auth/me')
+}
+
+export async function apiUpdateProfile(data: {
+  displayName?: string
+  username?: string
+  bio?: string
+  phone?: string
+  avatar?: string
+}) {
+  return apiFetch<{ user: ApiUser }>('/api/auth/me', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function apiChangePassword(data: { currentPassword: string; newPassword: string }) {
+  return apiFetch<{ message: string }>('/api/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
 }
 
 // ─── Check-ins ────────────────────────────────────────────────────────────────

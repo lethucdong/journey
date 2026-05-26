@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
         displayName: true,
         avatar: true,
         bio: true,
+        phone: true,
         createdAt: true,
         _count: { select: { checkIns: true } },
       },
@@ -37,14 +38,28 @@ export async function PATCH(req: NextRequest) {
     const session = await requireAuth(req)
     const body = await req.json()
 
-    type AllowedField = 'displayName' | 'bio' | 'avatar'
-    const allowed: AllowedField[] = ['displayName', 'bio', 'avatar']
+    type AllowedField = 'displayName' | 'bio' | 'avatar' | 'phone'
+    const allowed: AllowedField[] = ['displayName', 'bio', 'avatar', 'phone']
     const updates: Partial<Record<AllowedField, string>> = {}
 
     for (const field of allowed) {
       if (typeof body[field] === 'string') {
         updates[field] = body[field].trim()
       }
+    }
+
+    // Username change — validate uniqueness
+    if (typeof body.username === 'string') {
+      const newUsername = body.username.trim().toLowerCase()
+      if (!/^[a-z0-9_]{3,30}$/.test(newUsername)) {
+        return apiError('Username must be 3–30 chars: letters, numbers, underscores only', 422)
+      }
+      const existing = await prisma.user.findFirst({
+        where: { username: newUsername, NOT: { id: session.sub } },
+        select: { id: true },
+      })
+      if (existing) return apiError('Username already taken', 409)
+      ;(updates as Record<string, string>).username = newUsername
     }
 
     if (Object.keys(updates).length === 0) {
@@ -61,6 +76,7 @@ export async function PATCH(req: NextRequest) {
         displayName: true,
         avatar: true,
         bio: true,
+        phone: true,
         updatedAt: true,
       },
     })

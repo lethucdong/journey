@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Home, Map, ImageIcon, Plus, User, LogIn, LogOut, X } from 'lucide-react'
+import { Home, Map, ImageIcon, Plus, User, LogIn, LogOut, X, Settings } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useState, useEffect, useRef } from 'react'
 
@@ -70,13 +70,23 @@ export default function MobileNav() {
                 </button>
               </div>
 
+              {/* Edit profile */}
+              <Link
+                href="/profile/edit"
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 px-5 py-4 text-gray-300 hover:bg-white/5 transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+                <span className="text-sm font-medium">Chỉnh sửa hồ sơ</span>
+              </Link>
+
               {/* Sign out */}
               <button
                 onClick={async () => { setMenuOpen(false); await logout() }}
-                className="w-full flex items-center gap-3 px-5 py-4 text-red-400 hover:bg-red-500/8 transition-colors"
+                className="w-full flex items-center gap-3 px-5 py-4 text-red-400 hover:bg-red-500/8 transition-colors border-t border-white/8"
               >
                 <LogOut className="w-4 h-4" />
-                <span className="text-sm font-medium">Sign out</span>
+                <span className="text-sm font-medium">Đăng xuất</span>
               </button>
             </motion.div>
           </>

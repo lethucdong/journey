@@ -155,3 +155,39 @@ body {
   break-inside: avoid;
   margin-bottom: 1rem;
 }
+
+/* Ticker scroll animation */
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-ticker {
+  animation: ticker 28s linear infinite;
+}
+.animate-ticker-slow {
+  animation: ticker 40s linear infinite;
+}
+
+/* Floating card drift */
+@keyframes float-a {
+  0%, 100% { transform: translateY(0px) rotate(-5deg); }
+  50%       { transform: translateY(-12px) rotate(-5deg); }
+}
+@keyframes float-b {
+  0%, 100% { transform: translateY(0px) rotate(4deg); }
+  50%       { transform: translateY(-8px) rotate(4deg); }
+}
+@keyframes float-c {
+  0%, 100% { transform: translateY(0px) rotate(-2deg); }
+  50%       { transform: translateY(-14px) rotate(-2deg); }
+}
+.float-a { animation: float-a 5s ease-in-out infinite; }
+.float-b { animation: float-b 6s ease-in-out infinite; }
+.float-c { animation: float-c 4.5s ease-in-out infinite; }
+
+/* Gradient orb */
+@keyframes orb-pulse {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50%       { opacity: 0.25; transform: scale(1.08); }
+}
+.orb-pulse { animation: orb-pulse 6s ease-in-out infinite; }

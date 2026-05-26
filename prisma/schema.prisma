@@ -39,6 +39,7 @@ model User {
   displayName  String
   avatar       String?
   bio          String?  @db.Text
+  phone        String?
   passwordHash String
 
   checkIns      CheckIn[]

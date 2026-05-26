@@ -10,6 +10,8 @@ import {
   type ApiUser,
 } from '@/lib/api/client'
 
+export type { ApiUser }
+
 interface AuthState {
   user: ApiUser | null
   isLoading: boolean
@@ -21,6 +23,7 @@ interface AuthActions {
   register: (data: { email: string; username: string; displayName: string; password: string }) => Promise<string | null>
   logout: () => Promise<void>
   refresh: () => Promise<void>
+  updateUser: (patch: Partial<ApiUser>) => void
   openAuthModal: (tab?: 'login' | 'register') => void
   closeAuthModal: () => void
 }
@@ -87,6 +90,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else setUser(null)
   }, [])
 
+  const updateUser = useCallback((patch: Partial<ApiUser>) => {
+    setUser((prev) => prev ? { ...prev, ...patch } : prev)
+  }, [])
+
   const openAuthModal = useCallback((tab: 'login' | 'register' = 'login') => {
     setModal({ open: true, tab })
   }, [])
@@ -105,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         refresh,
+        updateUser,
         modal,
         openAuthModal,
         closeAuthModal,

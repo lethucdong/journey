@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Compass, Plus, LogOut, User, Bell, MessageCircle, CornerDownRight } from 'lucide-react'
+import { Compass, Plus, LogOut, User, Bell, MessageCircle, CornerDownRight, Settings } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useState, useEffect, useRef, useCallback } from 'react'
 
@@ -194,8 +194,14 @@ export default function Navbar() {
                 </button>
                 <div className="absolute right-0 top-full mt-1 w-44 glass-dark border border-white/10 rounded-xl py-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all shadow-xl">
                   <div className="px-3 py-2 border-b border-white/5">
+                    <p className="text-sm text-white font-medium truncate">{user?.displayName}</p>
                     <p className="text-xs text-gray-400">@{user?.username}</p>
                   </div>
+                  <Link href="/profile/edit"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
+                  >
+                    <Settings className="w-3.5 h-3.5" />Edit profile
+                  </Link>
                   <button onClick={logout}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
                   >

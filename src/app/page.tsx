@@ -1,41 +1,36 @@
 import Hero from '@/components/landing/Hero'
-import FeaturedGrid from '@/components/landing/FeaturedGrid'
+import Ticker from '@/components/landing/Ticker'
+import HowItWorks from '@/components/landing/HowItWorks'
 import Stats from '@/components/landing/Stats'
-import { Globe, Share2, ExternalLink } from 'lucide-react'
+import FeaturesBento from '@/components/landing/FeaturesBento'
+import FeaturedGrid from '@/components/landing/FeaturedGrid'
+import LandingCTA from '@/components/landing/LandingCTA'
+import { Compass } from 'lucide-react'
 
 export default function HomePage() {
   return (
     <div className="pb-20 md:pb-0">
       <Hero />
+      <Ticker />
+      <HowItWorks />
       <Stats />
+      <FeaturesBento />
       <FeaturedGrid />
-
-      {/* Quote section */}
-      <section className="py-24 px-6 text-center max-w-3xl mx-auto">
-        <p className="font-display text-2xl md:text-3xl font-medium text-gray-200 leading-relaxed italic">
-          &ldquo;The world is a book, and those who do not travel
-          read only one page.&rdquo;
-        </p>
-        <p className="mt-4 text-gray-500 text-sm">— Saint Augustine</p>
-      </section>
+      <LandingCTA />
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-8 px-6">
+      <footer className="border-t border-white/5 py-10 px-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-gray-500 text-sm">
-            © 2024 Journey. A personal travel archive.
-          </p>
-          <div className="flex items-center gap-4">
-            <a href="#" className="text-gray-500 hover:text-white transition-colors">
-              <Globe className="w-5 h-5" />
-            </a>
-            <a href="#" className="text-gray-500 hover:text-white transition-colors">
-              <Share2 className="w-5 h-5" />
-            </a>
-            <a href="#" className="text-gray-500 hover:text-white transition-colors">
-              <ExternalLink className="w-5 h-5" />
-            </a>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-orange-500/20 border border-orange-500/30 flex items-center justify-center">
+              <Compass className="w-3.5 h-3.5 text-orange-400" />
+            </div>
+            <span className="font-display font-bold text-white">Journey</span>
+            <span className="text-gray-600 text-sm ml-2">· A personal travel archive</span>
           </div>
+          <p className="text-gray-600 text-xs">
+            © {new Date().getFullYear()} Journey. Built with love for those who wander.
+          </p>
         </div>
       </footer>
     </div>
