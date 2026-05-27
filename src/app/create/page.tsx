@@ -211,6 +211,13 @@ export default function CreatePage() {
     }
   }, [])
 
+  const handleAiFill = useCallback(() => {
+    const firstValidUrl = images.find((img) => img.url && !img.error && !img.uploading)?.url
+    if (!firstValidUrl) return
+    analyzedUrlRef.current = null
+    analyzeImage(firstValidUrl)
+  }, [images, analyzeImage])
+
   const uploadFile = useCallback(async (file: File) => {
     const preview = URL.createObjectURL(file)
     setImages((prev) => [...prev, { url: '', preview, uploading: true }])
@@ -234,7 +241,6 @@ export default function CreatePage() {
 
       const url: string = uploadBody.secure_url
       setImages((prev) => prev.map((img) => img.preview === preview ? { ...img, url, uploading: false } : img))
-      if (!analyzedUrlRef.current) analyzeImage(url)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Upload thất bại'
       setImages((prev) => prev.map((img) => img.preview === preview ? { ...img, uploading: false, error: msg } : img))
@@ -314,7 +320,7 @@ export default function CreatePage() {
             {/* ── Ảnh — đầu tiên ── */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                Ảnh <span className="text-gray-500 font-normal text-xs ml-1">tuỳ chọn · AI sẽ đọc ảnh</span>
+                Ảnh <span className="text-gray-500 font-normal text-xs ml-1">tuỳ chọn</span>
               </label>
               <div
                 onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
@@ -334,26 +340,42 @@ export default function CreatePage() {
               </div>
 
               {images.length > 0 && (
-                <div className="mt-2 grid grid-cols-4 gap-2">
-                  {images.map((img) => (
-                    <div key={img.preview} className="relative aspect-square rounded-lg overflow-hidden bg-white/5 border border-white/10">
-                      <img src={img.preview} alt="" className="w-full h-full object-cover" />
-                      {img.uploading && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <Loader2 className="w-4 h-4 text-white animate-spin" />
-                        </div>
-                      )}
-                      {img.error && (
-                        <div className="absolute inset-0 bg-red-900/70 flex items-center justify-center px-1">
-                          <p className="text-red-200 text-[9px] text-center leading-tight">Lỗi</p>
-                        </div>
-                      )}
-                      <button type="button" onClick={() => setImages((p) => p.filter((i) => i.preview !== img.preview))}
-                        className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/70 flex items-center justify-center text-white hover:bg-black/90">
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
+                <div className="mt-2 space-y-2">
+                  <div className="grid grid-cols-4 gap-2">
+                    {images.map((img) => (
+                      <div key={img.preview} className="relative aspect-square rounded-lg overflow-hidden bg-white/5 border border-white/10">
+                        <img src={img.preview} alt="" className="w-full h-full object-cover" />
+                        {img.uploading && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <Loader2 className="w-4 h-4 text-white animate-spin" />
+                          </div>
+                        )}
+                        {img.error && (
+                          <div className="absolute inset-0 bg-red-900/70 flex items-center justify-center px-1">
+                            <p className="text-red-200 text-[9px] text-center leading-tight">Lỗi</p>
+                          </div>
+                        )}
+                        <button type="button" onClick={() => setImages((p) => p.filter((i) => i.preview !== img.preview))}
+                          className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/70 flex items-center justify-center text-white hover:bg-black/90">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  {images.some((img) => img.url && !img.error && !img.uploading) && (
+                    <button
+                      type="button"
+                      onClick={handleAiFill}
+                      disabled={analyzing}
+                      className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 hover:bg-purple-500/25 disabled:opacity-60 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                    >
+                      {analyzing
+                        ? <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                        : <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                      }
+                      {analyzing ? 'Đang phân tích…' : 'AI tự động điền'}
+                    </button>
+                  )}
                 </div>
               )}
             </div>
